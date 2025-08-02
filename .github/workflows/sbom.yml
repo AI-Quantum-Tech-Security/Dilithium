@@ -1,20 +1,24 @@
-name: SBOM
+name: Generate SBOM
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   sbom:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install cyclonedx-rust-cargo
+      - uses: actions/checkout@v4
+
+      - name: Install CycloneDX Rust
         run: cargo install cyclonedx-bom
+
       - name: Generate SBOM
-        run: cargo cyclonedx -o target/sbom.xml
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        run: cyclonedx-bom -o sbom.xml
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: dilithium-sbom
-          path: target/sbom.xml
+          name: sbom
+          path: sbom.xml
