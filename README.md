@@ -28,12 +28,29 @@ Sign a message.
 }
 ```
 
+### `POST /verify`
+
+**Body**
+```json
+{
+  "message": "smth",
+  "signature": "<base64 signature>",
+  "pk": "<base64 public key>"
+}
+```
+**Response**
+```
+{
+  "valid": true
+}
+```
+
 ## Build & Run
 ```
 cargo run
 ```
 
-##Docker
+## Docker
 ```
 docker build -t dilithium-signer .
 docker run --env API_TOKEN=super-secret -p 8080:8080 dilithium-signer
