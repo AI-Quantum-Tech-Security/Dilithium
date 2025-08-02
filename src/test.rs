@@ -1,25 +1,29 @@
 #[cfg(test)]
 mod tests {
-    use crate::dilithium::sign::sign_message;
-    use crate::dilithium::signer::{generate_keypair, verify_signature};
     use crate::signer::*;
 
     #[test]
-    fn test_sign_and_verify() {
+    fn test_valid_signature() {
         let (pk, sk) = generate_keypair();
-        let msg = b"hello quantum world";
+        let msg = b"quantum test";
         let sig = sign_message(msg, &sk);
-        let valid = verify_signature(msg, &sig, &pk);
-        assert!(valid);
+        assert!(verify_signature(msg, &sig, &pk));
     }
 
     #[test]
-    fn test_forged_message_fails() {
+    fn test_signature_rejection_on_tamper() {
         let (pk, sk) = generate_keypair();
         let msg = b"legit";
         let sig = sign_message(msg, &sk);
-        let forged = b"tampered";
-        let valid = verify_signature(forged, &sig, &pk);
+        let fake = b"forged";
+        assert!(!verify_signature(fake, &sig, &pk));
+    }
+
+    #[test]
+    fn test_invalid_base64_signature() {
+        let (pk, _) = generate_keypair();
+        let bad_sig = "!!!not_base64$$$";
+        let valid = verify_signature(b"any", bad_sig, &pk);
         assert!(!valid);
     }
 }
