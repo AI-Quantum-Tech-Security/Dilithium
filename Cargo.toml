@@ -9,3 +9,5 @@ sha3 = "0.10"
 base64 = "0.22.1"
 axum = "0.8.4"
 serde = { version = "1.0.219", features = ["derive"] }
+async-trait = "0.1.88"
+subtle = "2.6.1"

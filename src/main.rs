@@ -1,6 +1,8 @@
 // src/main.rs
 mod dilithium;
-
+mod routes;
+mod auth;
+mod routes;
 
 use dilithium::params::DilithiumParams;
 use dilithium::keys::keygen;

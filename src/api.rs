@@ -40,7 +40,6 @@ async fn sign(Json(req): Json<SignRequest>) -> Json<SignResponse> {
     let signature = signer::sign_message(req.message.as_bytes(), &sk);
     Json(SignResponse { signature })
 }
-
 async fn verify(Json(req): Json<VerifyRequest>) -> Json<VerifyResponse> {
     let pk = base64::decode(&req.pk).expect("Bad PK");
     let valid = signer::verify_signature(req.message.as_bytes(), &req.signature, &pk);
