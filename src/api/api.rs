@@ -5,7 +5,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use crate::auth::InternalAuth;
+use crate::api::auth::InternalAuth;
 use crate::api::{
     error::ApiError,
     crypto_keys::AppCryptoKeys,

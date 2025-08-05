@@ -1,4 +1,3 @@
-use axum::Router;
 use std::env;
 use std::sync::Arc;
 use tokio::net::TcpListener;
@@ -6,7 +5,6 @@ use aws_sdk_kms::Client as KmsClient;
 use aws_config::load_from_env;
 
 mod api;
-mod auth;
 mod signer;
 
 #[tokio::main]
