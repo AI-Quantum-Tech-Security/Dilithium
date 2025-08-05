@@ -4,21 +4,33 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   sbom:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install CycloneDX Rust
-        run: cargo install cyclonedx-bom
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
 
-      - name: Generate SBOM
+      - name: Install CycloneDX Rust tool
+        run: cargo install --version 0.8.0 cyclonedx-bom --locked
+
+      - name: Generate SBOM for the project
         run: cyclonedx-bom -o sbom.xml
 
-      - name: Upload SBOM artifact
+      - name: Upload SBOM as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: sbom
           path: sbom.xml
+          retention-days: 7
