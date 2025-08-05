@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rand = "0.8"
-sha3 = "0.10"
-base64 = "0.22.1"
-axum = "0.8.4"
-serde = { version = "1.0.219", features = ["derive"] }
-async-trait = "0.1.88"
-subtle = "2.6.1"
+pqcrypto-dilithium = "0.4.0" # or the latest version
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+base64 = "0.21"
+subtle = "2.5.0"
+async-trait = "0.1.75"

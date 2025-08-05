@@ -1,19 +1,16 @@
-// src/main.rs
 mod dilithium;
-mod routes;
-mod auth;
-mod routes;
 
-use dilithium::params::DilithiumParams;
-use dilithium::keys::keygen;
+use DilithiumParams;
+use dilithium::keys::{keygen, PublicKey, SecretKey};
 use dilithium::sign::sign_message;
 use dilithium::verify::verify_signature;
-use std::{env, fs};
+
+use std::{fs};
 
 fn sign_and_verify_file(
     file_path: &str,
-    sk: &dilithium::keys::SecretKey,
-    pk: &dilithium::keys::PublicKey,
+    sk: &SecretKey,
+    pk: &PublicKey,
     params: &DilithiumParams,
 ) {
     let file_data = fs::read(file_path)
@@ -29,15 +26,11 @@ fn sign_and_verify_file(
 
 fn main() {
     let params = DilithiumParams::default();
-
     let (public_key, secret_key) = keygen(&params);
-    println!("Public Key: {:?}", public_key);
-    println!("Secret Key: {:?}", secret_key);
 
-
-    
     let message = b"Hello, Crystal Dilithium!";
     println!("\nSigning default message: {:?}", String::from_utf8_lossy(message));
+
     let signature = sign_message(&secret_key, message, &params);
     println!("Signature: {:?}", signature);
 

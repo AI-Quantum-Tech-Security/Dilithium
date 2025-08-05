@@ -1,26 +1,32 @@
-use pqcrypto_dilithium::dilithium3::*;
+use pqcrypto_dilithium::dilithium3::{
+    keypair, sign, verify, PublicKey, SecretKey,
+};
 use base64::{encode, decode};
 
-pub fn generate_keypair() -> (Vec<u8>, Vec<u8>) {
+pub fn generate_keypair() -> (String, String) {
     let (pk, sk) = keypair();
-    (pk.as_bytes().to_vec(), sk.as_bytes().to_vec())
+    (encode(pk.as_bytes()), encode(sk.as_bytes()))
 }
 
-pub fn sign_message(message: &[u8], sk: &[u8]) -> String {
-    let secret_key = SecretKey::from_bytes(sk).expect("Invalid SK");
-    let sig = sign(message, &secret_key);
-    encode(sig.as_bytes())
+pub fn sign_message(message: &[u8], sk_b64: &str) -> Result<String, base64::DecodeError> {
+    let sk_bytes = decode(sk_b64)?;
+    let secret_key = SecretKey::from_bytes(&sk_bytes).expect("Invalid secret key bytes");
+    let signed_message = sign(message, &secret_key);
+    Ok(encode(signed_message.as_bytes()))
 }
 
-pub fn verify_signature(message: &[u8], signature_b64: &str, pk: &[u8]) -> bool {
-    let signature = match decode(signature_b64) {
-        Ok(sig) => sig,
-        Err(_) => return false,
-    };
-    let public_key = PublicKey::from_bytes(pk).expect("Invalid PK");
-    let sig_struct = match SignedMessage::from_bytes(&signature) {
+pub fn verify_signature(message: &[u8], sig_b64: &str, pk_b64: &str) -> bool {
+    let signature = match decode(sig_b64) {
         Ok(s) => s,
         Err(_) => return false,
     };
-    sig_struct.verify(&public_key).is_ok()
+    let public_key = match decode(pk_b64) {
+        Ok(p) => match PublicKey::from_bytes(&p) {
+            Ok(pk) => pk,
+            Err(_) => return false,
+        },
+        Err(_) => return false,
+    };
+
+    verify(&public_key, message, &signature).is_ok()
 }
