@@ -1,39 +1,35 @@
-mod dilithium;
+use axum::Router;
+use std::env;
+use std::sync::Arc;
+use tokio::net::TcpListener;
+use aws_sdk_kms::Client as KmsClient;
+use aws_config::load_from_env;
 
-use DilithiumParams;
-use dilithium::keys::{keygen, PublicKey, SecretKey};
-use dilithium::sign::sign_message;
-use dilithium::verify::verify_signature;
+mod api;
+mod auth;
+mod signer;
 
-use std::{fs};
+#[tokio::main]
+async fn main() {
+    let config = load_from_env().await;
+    let kms_client = KmsClient::new(&config);
 
-fn sign_and_verify_file(
-    file_path: &str,
-    sk: &SecretKey,
-    pk: &PublicKey,
-    params: &DilithiumParams,
-) {
-    let file_data = fs::read(file_path)
-        .unwrap_or_else(|err| panic!("Error reading file {}: {}", file_path, err));
-    println!("File '{}' read successfully ({} bytes).", file_path, file_data.len());
+    // In a real app, you would load the key ID from a config file or env var
+    // and retrieve the public key from the KMS.
+    let dilithium_key = signer::create_dilithium_key_in_kms(&kms_client, "dilithium-signing-key").await
+        .expect("Failed to create or retrieve KMS key");
 
-    let signature = sign_message(sk, &file_data, params);
-    println!("Signature for file '{}': {:?}", file_path, signature);
+    let app_state = api::AppState {
+        kms_client: Arc::new(kms_client),
+        dilithium_key,
+    };
 
-    let valid = verify_signature(pk, &file_data, &signature, params);
-    println!("Verification result for file '{}': {}", file_path, valid);
-}
+    let app = api::routes(app_state);
 
-fn main() {
-    let params = DilithiumParams::default();
-    let (public_key, secret_key) = keygen(&params);
+    let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = format!("0.0.0.0:{}", port);
+    println!("Listening on http://{}", addr);
 
-    let message = b"Hello, Crystal Dilithium!";
-    println!("\nSigning default message: {:?}", String::from_utf8_lossy(message));
-
-    let signature = sign_message(&secret_key, message, &params);
-    println!("Signature: {:?}", signature);
-
-    let valid = verify_signature(&public_key, message, &signature, &params);
-    println!("Verification result: {}", valid);
+    let listener = TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
