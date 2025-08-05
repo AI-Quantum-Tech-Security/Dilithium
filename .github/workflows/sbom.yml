@@ -23,7 +23,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install CycloneDX Rust tool
-        run: cargo install --version 0.8.0 cyclonedx-bom --locked
+        run: cargo install --version 0.8.0 cyclonedx-bom-cli --locked
 
       - name: Generate SBOM for the project
         run: cyclonedx-bom -o sbom.xml
