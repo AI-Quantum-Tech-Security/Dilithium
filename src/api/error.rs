@@ -1,5 +1,5 @@
 use axum::{http::StatusCode, response::{Response, IntoResponse}, Json};
-use serde::{Serialize};
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub enum ApiError {
