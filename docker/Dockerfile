@@ -1,27 +1,23 @@
+FROM rust:1.79-slim-bookworm as builder
 
-FROM ubuntu:latest
+RUN apt-get update && apt-get install -y openssl pkg-config
+
 WORKDIR /app
-RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    pkg-config \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY Cargo.toml Cargo.lock ./
 
-RUN mkdir src
-RUN echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-
 COPY src ./src
+
 RUN cargo build --release
 
-FROM debian:buster-slim
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y openssl
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/Dilithium .
+COPY --from=builder /app/target/release/pqc-api .
 
 EXPOSE 3000
 
-CMD ["./Dilithium"]
+CMD ["./pqc-api"]

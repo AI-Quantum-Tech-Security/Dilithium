@@ -5,7 +5,6 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use crate::api::auth::InternalAuth;
 use crate::api::{
     error::ApiError,
     crypto_keys::AppCryptoKeys,
@@ -47,7 +46,6 @@ pub fn routes(app_keys: Arc<AppCryptoKeys>) -> Router {
 }
 
 async fn sign_handler(
-    _auth: InternalAuth,
     State(app_keys): State<Arc<AppCryptoKeys>>,
     Json(req): Json<SignRequest>,
 ) -> Result<Json<SignResponse>, ApiError> {
