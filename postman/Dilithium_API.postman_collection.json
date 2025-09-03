@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "Dilithium API",
+    "_postman_id": "9c7bb1ce-6d2b-4e6d-a7ed-7f2c03c7d001",
+    "description": "Collection to test Dilithium-based signing service (public-key, sign, verify, tampered verify). Signature is a Base64-encoded SignedMessage (signature+message).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET Public Key",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/public-key",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "public-key"
+          ]
+        },
+        "description": "Fetch Base64 encoded public key and store it into environment variable public_key."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Tests for GET /public-key",
+              "pm.test(\"Status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "pm.test(\"public_key field exists\", function () {",
+              "  pm.expect(data).to.have.property('public_key');",
+              "});",
+              "",
+              "pm.environment.set('public_key', data.public_key);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Sign Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{internal_api_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"{{message}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/sign",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "sign"
+          ]
+        },
+        "description": "Sign the provided message. Stores signature (Base64 SignedMessage) into environment variable signature."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Tests for POST /sign",
+              "pm.test(\"Status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const data = pm.response.json();",
+              "pm.test(\"signature field exists\", function () {",
+              "  pm.expect(data).to.have.property('signature');",
+              "});",
+              "pm.environment.set('signature', data.signature);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Verify (Valid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"{{message}}\",\n  \"signature\": \"{{signature}}\",\n  \"pk\": \"{{public_key}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "verify"
+          ]
+        },
+        "description": "Verify previously signed message; should return valid=true."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Tests for POST /verify (valid)",
+              "pm.test(\"Status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const data = pm.response.json();",
+              "pm.test(\"Response has valid field\", function () {",
+              "  pm.expect(data).to.have.property('valid');",
+              "});",
+              "pm.test(\"Signature is valid\", function () {",
+              "  pm.expect(data.valid).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST Verify (Tampered)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Pre-request: create a tampered_message by appending a '!'.",
+              "const original = pm.environment.get('message');",
+              "pm.environment.set('tampered_message', original + '!');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Tests for POST /verify (tampered)",
+              "pm.test(\"Status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const data = pm.response.json();",
+              "pm.test(\"Response has valid field\", function () {",
+              "  pm.expect(data).to.have.property('valid');",
+              "});",
+              "pm.test(\"Tampered message is invalid\", function () {",
+              "  pm.expect(data.valid).to.eql(false);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"{{tampered_message}}\",\n  \"signature\": \"{{signature}}\",\n  \"pk\": \"{{public_key}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/verify",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "verify"
+          ]
+        },
+        "description": "Attempt to verify a tampered message with original SignedMessage; expected valid=false."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:3000"
+    },
+    {
+      "key": "message",
+      "value": "Hello Dilithium"
+    },
+    {
+      "key": "internal_api_token",
+      "value": "super_secret_token_123"
+    },
+    {
+      "key": "public_key",
+      "value": ""
+    },
+    {
+      "key": "signature",
+      "value": ""
+    },
+    {
+      "key": "tampered_message",
+      "value": ""
+    }
+  ]
+}
