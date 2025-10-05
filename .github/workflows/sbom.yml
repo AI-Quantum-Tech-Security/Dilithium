@@ -1,4 +1,4 @@
-name: SBOM
+name: Generate SBOM
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install CycloneDX cargo subcommand
-        run: cargo install --git https://github.com/CycloneDX/cyclonedx-rust-cargo.git --package cargo-cyclonedx --locked
+        run: cargo install cargo-cyclonedx --git https://github.com/CycloneDX/cyclonedx-rust-cargo.git --locked
 
       - name: Generate CycloneDX SBOM
         run: cargo cyclonedx -o sbom.xml
