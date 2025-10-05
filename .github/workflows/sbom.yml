@@ -29,12 +29,12 @@ jobs:
       - name: Generate CycloneDX SBOM
         run: cargo cyclonedx
 
-      - name: Copy SBOM to sbom.xml
-        run: cp target/cyclonedx.xml sbom.xml
+      - name: List target directory
+        run: ls -R target
 
       - name: Upload SBOM as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: sbom
-          path: sbom.xml
+          path: target/cyclonedx*.xml
           retention-days: 7
