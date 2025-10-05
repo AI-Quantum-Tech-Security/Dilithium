@@ -12,6 +12,7 @@ on:
 jobs:
   sbom:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,9 +24,9 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install CycloneDX cargo subcommand
-        run: cargo install --version 0.8.0 cyclonedx-rust-cargo --locked
+        run: cargo install --git https://github.com/CycloneDX/cyclonedx-rust-cargo.git --locked
 
-      - name: Generate SBOM for the project
+      - name: Generate CycloneDX SBOM
         run: cargo cyclonedx -o sbom.xml
 
       - name: Upload SBOM as an artifact
