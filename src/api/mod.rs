@@ -9,6 +9,7 @@ use std::sync::Arc;
 pub mod crypto_keys;
 pub mod auth;
 pub mod error;
+mod routes;
 
 //data structures for requests and responses
 #[derive(Deserialize)]

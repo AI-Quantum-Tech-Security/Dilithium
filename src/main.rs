@@ -14,7 +14,6 @@ async fn main() {
 
     let app = api::routes(app_keys);
 
-    //setup + running the Axum server
     let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
     println!("Listening on http://{}", addr);
